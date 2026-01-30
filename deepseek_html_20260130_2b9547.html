@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Werewolf Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #f0f0f0;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(30, 30, 46, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 10px rgba(255, 107, 107, 0.5);
+        }
+        
+        h2 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+        
+        h3 {
+            color: #ffd166;
+            margin-bottom: 10px;
+        }
+        
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #c9c9c9;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 2px solid #3a3a5d;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 16px;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+        
+        .btn {
+            background-color: #4ecdc4;
+            color: #16213e;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #3db8af;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: #ffd166;
+            margin-top: 5px;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e6bc5a;
+            box-shadow: 0 5px 15px rgba(255, 209, 102, 0.3);
+        }
+        
+        .btn-danger {
+            background-color: #ff6b6b;
+        }
+        
+        .btn-danger:hover {
+            background-color: #e65a5a;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .player-list {
+            list-style-type: none;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .player-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #4ecdc4;
+        }
+        
+        .player-item.werewolf {
+            border-left-color: #ff6b6b;
+        }
+        
+        .player-item.seer {
+            border-left-color: #9d4edd;
+        }
+        
+        .player-item.doctor {
+            border-left-color: #4caf50;
+        }
+        
+        .player-item.villager {
+            border-left-color: #ffd166;
+        }
+        
+        .role-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        
+        .narator-text {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 15px;
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin: 25px 0;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #3a3a5d;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .action-buttons .btn {
+            width: auto;
+            flex: 1;
+        }
+        
+        .role-reveal {
+            text-align: center;
+            padding: 40px 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .role-name {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffd166;
+            margin: 20px 0;
+            text-shadow: 0 0 20px rgba(255, 209, 102, 0.7);
+        }
+        
+        .player-name {
+            font-size: 2.5rem;
+            color: #4ecdc4;
+            margin-bottom: 30px;
+        }
+        
+        .selection-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .selection-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .selection-item:hover {
+            background-color: rgba(78, 205, 196, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        .selection-item.selected {
+            background-color: rgba(78, 205, 196, 0.5);
+            border: 2px solid #4ecdc4;
+        }
+        
+        .vote-result {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        .phase-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+        }
+        
+        .phase {
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 0 5px;
+            font-weight: bold;
+            opacity: 0.5;
+        }
+        
+        .phase.active {
+            opacity: 1;
+            background-color: rgba(78, 205, 196, 0.3);
+            color: #4ecdc4;
+        }
+        
+        .swipe-hint {
+            text-align: center;
+            margin-top: 20px;
+            color: #aaa;
+            font-style: italic;
+        }
+        
+        .countdown-timer {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #ffd166;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .fas {
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .selection-list {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-paw"></i> WEREWOLF GAME</h1>
+        
+        <!-- Layar Input Pemain -->
+        <div id="player-setup-screen" class="screen active">
+            <h2><i class="fas fa-users"></i> Tambah Pemain</h2>
+            <p>Tambahkan nama-nama pemain yang akan berpartisipasi dalam permainan.</p>
+            
+            <div class="input-group">
+                <label for="player-name">Nama Pemain:</label>
+                <input type="text" id="player-name" placeholder="Masukkan nama pemain">
+            </div>
+            
+            <button id="add-player-btn" class="btn">
+                <i class="fas fa-plus"></i> Tambah Pemain
+            </button>
+            
+            <ul id="players-list" class="player-list">
+                <!-- Daftar pemain akan muncul di sini -->
+            </ul>
+            
+            <button id="start-game-btn" class="btn btn-secondary">
+                <i class="fas fa-play"></i> Mulai Permainan
+            </button>
+            
+            <div class="instructions">
+                <p><strong>Instruksi:</strong> Tambahkan minimal 5 pemain untuk memulai permainan. Setelah semua pemain ditambahkan, klik "Mulai Permainan".</p>
+            </div>
+        </div>
+        
+        <!-- Layar Pembagian Peran -->
+        <div id="role-assignment-screen" class="screen">
+            <h2><i class="fas fa-mask"></i> Pembagian Peran</h2>
+            <p>Berikan HP kepada setiap pemain sesuai nama mereka untuk melihat peran rahasia mereka.</p>
+            
+            <div class="phase-indicator">
+                <div class="phase active">Pembagian Peran</div>
+                <div class="phase">Malam Hari</div>
+                <div class="phase">Siang Hari</div>
+                <div class="phase">Voting</div>
+            </div>
+            
+            <div id="narator-text" class="narator-text">
+                Selamat datang di desa kecil yang diteror oleh serigala! Semua pemain akan diberikan peran rahasia. Berikan HP kepada pemain pertama untuk melihat peran mereka.
+            </div>
+            
+            <div class="action-buttons">
+                <button id="next-player-btn" class="btn">
+                    <i class="fas fa-arrow-right"></i> Pemain Selanjutnya
+                </button>
+            </div>
+            
+            <div class="swipe-hint">
+                <i class="fas fa-hand-point-up"></i> Ketuk tombol atau geser ke atas untuk melanjutkan
+            </div>
+        </div>
+        
+        <!-- Layar Reveal Peran -->
+        <div id="role-reveal-screen" class="screen">
+            <div class="role-reveal">
+                <h2>Peran Rahasia Anda</h2>
+                <div id="current-player-name" class="player-name">Nama Pemain</div>
+                <div id="current-player-role" class="role-name">Warga Desa</div>
+                <div id="role-description" style="margin-top: 20px; font-size: 1.2rem;">
+                    Anda adalah warga desa biasa. Tugas Anda adalah mencari dan membasmi para werewolf.
+                </div>
+                <div id="auto-progress-countdown" class="countdown-timer" style="display: none;">
+                    Otomatis lanjut ke pemain berikutnya dalam: <span id="countdown">5</span> detik
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="hide-role-btn" class="btn">
+                    <i class="fas fa-eye-slash"></i> Sembunyikan Peran
+                </button>
+            </div>
+            
+            <div class="swipe-hint">
+                <i class="fas fa-hand-point-up"></i> Ketuk tombol atau geser ke atas untuk menyembunyikan peran
+            </div>
+        </div>
+        
+        <!-- Layar Malam Hari -->
+        <div id="night-screen" class="screen">
+            <h2><i class="fas fa-moon"></i> Malam Hari</h2>
+            
+            <div class="phase-indicator">
+                <div class="phase">Pembagian Peran</div>
+                <div class="phase active">Malam Hari</div>
+                <div class="phase">Siang Hari</div>
+                <div class="phase">Voting</div>
+            </div>
+            
+            <div id="night-narator-text" class="narator-text">
+                Malam tiba. Semua warga desa tertidur. Werewolf, bangun dan pilih target untuk dibunuh malam ini.
+            </div>
+            
+            <div id="night-action-area">
+                <!-- Aksi malam hari akan muncul di sini -->
+            </div>
+            
+            <div class="action-buttons">
+                <button id="next-night-phase-btn" class="btn">
+                    <i class="fas fa-forward"></i> Lanjut Fase Malam
+                </button>
+                <button id="end-night-btn" class="btn btn-secondary">
+                    <i class="fas fa-sun"></i> Akhiri Malam
+                </button>
+            </div>
+        </div>
+        
+        <!-- Layar Siang Hari -->
+        <div id="day-screen" class="screen">
+            <h2><i class="fas fa-sun"></i> Siang Hari</h2>
+            
+            <div class="phase-indicator">
+                <div class="phase">Pembagian Peran</div>
+                <div class="phase">Malam Hari</div>
+                <div class="phase active">Siang Hari</div>
+                <div class="phase">Voting</div>
+            </div>
+            
+            <div id="day-narator-text" class="narator-text">
+                Pagi tiba. Warga desa bangun dan menemukan korban malam ini. Diskusikan dan cari tahu siapa werewolf di antara kalian.
+            </div>
+            
+            <div id="victim-info" style="text-align: center; margin: 20px 0; padding: 15px; background-color: rgba(255, 107, 107, 0.2); border-radius: 10px;">
+                <h3>Korban Malam Ini:</h3>
+                <p id="victim-name" style="font-size: 1.5rem; color: #ff6b6b;">Belum ada korban</p>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="start-discussion-btn" class="btn">
+                    <i class="fas fa-comments"></i> Mulai Diskusi
+                </button>
+                <button id="start-voting-btn" class="btn btn-secondary">
+                    <i class="fas fa-vote-yea"></i> Mulai Voting
+                </button>
+            </div>
+        </div>
+        
+        <!-- Layar Voting -->
+        <div id="voting-screen" class="screen">
+            <h2><i class="fas fa-vote-yea"></i> Voting</h2>
+            
+            <div class="phase-indicator">
+                <div class="phase">Pembagian Peran</div>
+                <div class="phase">Malam Hari</div>
+                <div class="phase">Siang Hari</div>
+                <div class="phase active">Voting</div>
+            </div>
+            
+            <div id="voting-narator-text" class="narator-text">
+                Saatnya voting! Siapa yang menurut Anda adalah werewolf? Berikan HP kepada setiap pemain untuk memilih.
+            </div>
+            
+            <div id="voting-instruction" style="text-align: center; margin: 20px 0;">
+                <h3 id="current-voter">Pemain yang Sedang Voting: -</h3>
+                <p>Pilih salah satu pemain yang Anda curigai sebagai werewolf:</p>
+            </div>
+            
+            <div id="voting-options" class="selection-list">
+                <!-- Opsi voting akan muncul di sini -->
+            </div>
+            
+            <div class="action-buttons">
+                <button id="show-vote-result-btn" class="btn btn-danger">
+                    <i class="fas fa-chart-bar"></i> Tampilkan Hasil Voting
+                </button>
+            </div>
+        </div>
+        
+        <!-- Layar Hasil Voting -->
+        <div id="vote-result-screen" class="screen">
+            <h2><i class="fas fa-chart-pie"></i> Hasil Voting</h2>
+            
+            <div id="vote-result-narator-text" class="narator-text">
+                Hasil voting telah dikumpulkan. Berikut adalah hasilnya:
+            </div>
+            
+            <div id="vote-results-container">
+                <!-- Hasil voting akan muncul di sini -->
+            </div>
+            
+            <div id="executed-player-info" style="text-align: center; margin: 20px 0; padding: 15px; background-color: rgba(255, 107, 107, 0.2); border-radius: 10px; display: none;">
+                <h3>Pemain yang Dieksekusi:</h3>
+                <p id="executed-player-name" style="font-size: 1.5rem; color: #ff6b6b;"></p>
+                <p id="executed-player-role" style="font-size: 1.2rem;"></p>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="continue-after-vote-btn" class="btn">
+                    <i class="fas fa-forward"></i> Lanjutkan Permainan
+                </button>
+                <button id="restart-game-btn" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i> Mulai Game Baru
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data permainan
+        const gameData = {
+            players: [],
+            roles: ['Werewolf', 'Werewolf', 'Seer', 'Doctor', 'Villager', 'Villager', 'Villager'],
+            currentPlayerIndex: 0,
+            currentPhase: 'roleAssignment',
+            nightPhase: 'werewolf',
+            voteResults: {},
+            gameLog: [],
+            killedTonight: null,
+            healedTonight: null,
+            seerTarget: null,
+            autoProgressTimer: null,
+            countdownValue: 5
+        };
+
+        // DOM Elements
+        const screens = {
+            playerSetup: document.getElementById('player-setup-screen'),
+            roleAssignment: document.getElementById('role-assignment-screen'),
+            roleReveal: document.getElementById('role-reveal-screen'),
+            night: document.getElementById('night-screen'),
+            day: document.getElementById('day-screen'),
+            voting: document.getElementById('voting-screen'),
+            voteResult: document.getElementById('vote-result-screen')
+        };
+
+        // Fungsi untuk beralih antar layar
+        function switchScreen(toScreen) {
+            // Hentikan timer otomatis jika ada
+            if (gameData.autoProgressTimer) {
+                clearInterval(gameData.autoProgressTimer);
+                gameData.autoProgressTimer = null;
+            }
+            
+            // Sembunyikan semua layar
+            Object.values(screens).forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Tampilkan layar yang diminta
+            screens[toScreen].classList.add('active');
+        }
+
+        // Fungsi untuk menambahkan pemain
+        function addPlayer() {
+            const playerNameInput = document.getElementById('player-name');
+            const playerName = playerNameInput.value.trim();
+            
+            if (playerName === '') {
+                alert('Masukkan nama pemain!');
+                return;
+            }
+            
+            // Tambahkan pemain ke data permainan
+            gameData.players.push({
+                id: gameData.players.length + 1,
+                name: playerName,
+                role: '',
+                alive: true,
+                votedBy: []
+            });
+            
+            // Update tampilan daftar pemain
+            updatePlayerList();
+            
+            // Kosongkan input
+            playerNameInput.value = '';
+            playerNameInput.focus();
+        }
+
+        // Fungsi untuk memperbarui daftar pemain
+        function updatePlayerList() {
+            const playersList = document.getElementById('players-list');
+            playersList.innerHTML = '';
+            
+            gameData.players.forEach(player => {
+                const li = document.createElement('li');
+                li.className = 'player-item';
+                li.innerHTML = `
+                    <span>${player.name}</span>
+                    <button class="btn-danger" onclick="removePlayer(${player.id})" style="padding: 5px 10px; font-size: 14px;">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                `;
+                playersList.appendChild(li);
+            });
+            
+            // Update tombol mulai permainan
+            const startGameBtn = document.getElementById('start-game-btn');
+            startGameBtn.disabled = gameData.players.length < 5;
+            startGameBtn.textContent = gameData.players.length < 5 
+                ? `Minimal 5 pemain (${gameData.players.length}/5)` 
+                : 'Mulai Permainan';
+        }
+
+        // Fungsi untuk menghapus pemain
+        function removePlayer(playerId) {
+            gameData.players = gameData.players.filter(player => player.id !== playerId);
+            updatePlayerList();
+        }
+
+        // Fungsi untuk memulai permainan
+        function startGame() {
+            if (gameData.players.length < 5) {
+                alert('Minimal 5 pemain diperlukan untuk memulai permainan!');
+                return;
+            }
+            
+            // Acak peran untuk pemain
+            assignRoles();
+            
+            // Reset index pemain saat ini
+            gameData.currentPlayerIndex = 0;
+            
+            // Set narator teks awal
+            document.getElementById('narator-text').textContent = 
+                `Selamat datang di desa kecil yang diteror oleh serigala! Semua pemain akan diberikan peran rahasia. Berikan HP kepada ${gameData.players[0].name} untuk melihat peran mereka.`;
+            
+            // Beralih ke layar pembagian peran
+            switchScreen('roleAssignment');
+        }
+
+        // Fungsi untuk membagikan peran secara acak
+        function assignRoles() {
+            // Salin roles yang tersedia
+            let availableRoles = [...gameData.roles];
+            
+            // Jika jumlah pemain lebih banyak dari peran, tambahkan villager
+            while (availableRoles.length < gameData.players.length) {
+                availableRoles.push('Villager');
+            }
+            
+            // Acak urutan peran
+            availableRoles = availableRoles.sort(() => Math.random() - 0.5);
+            
+            // Berikan peran kepada setiap pemain
+            gameData.players.forEach((player, index) => {
+                player.role = availableRoles[index] || 'Villager';
+                player.alive = true;
+                player.votedBy = [];
+            });
+        }
+
+        // Fungsi untuk menampilkan peran pemain saat ini
+        function revealCurrentPlayerRole() {
+            const currentPlayer = gameData.players[gameData.currentPlayerIndex];
+            
+            // Update tampilan
+            document.getElementById('current-player-name').textContent = currentPlayer.name;
+            document.getElementById('current-player-role').textContent = currentPlayer.role;
+            
+            // Update deskripsi peran
+            const roleDescriptions = {
+                'Werewolf': 'Anda adalah Werewolf. Tugas Anda adalah membunuh warga desa satu per satu tanpa ketahuan.',
+                'Seer': 'Anda adalah Seer (Peramal). Setiap malam, Anda bisa melihat peran satu pemain.',
+                'Doctor': 'Anda adalah Doctor (Dokter). Setiap malam, Anda bisa menyelamatkan satu pemain dari serangan werewolf.',
+                'Villager': 'Anda adalah Warga Desa biasa. Tugas Anda adalah mencari dan membasmi para werewolf.'
+            };
+            
+            document.getElementById('role-description').textContent = 
+                roleDescriptions[currentPlayer.role] || 'Anda adalah warga desa biasa. Tugas Anda adalah mencari dan membasmi para werewolf.';
+            
+            // Tampilkan countdown timer otomatis
+            const countdownElement = document.getElementById('countdown');
+            const countdownContainer = document.getElementById('auto-progress-countdown');
+            
+            // Reset countdown
+            gameData.countdownValue = 5;
+            countdownElement.textContent = gameData.countdownValue;
+            
+            // Hentikan timer sebelumnya jika ada
+            if (gameData.autoProgressTimer) {
+                clearInterval(gameData.autoProgressTimer);
+            }
+            
+            // Mulai countdown otomatis
+            countdownContainer.style.display = 'block';
+            gameData.autoProgressTimer = setInterval(() => {
+                gameData.countdownValue--;
+                countdownElement.textContent = gameData.countdownValue;
+                
+                if (gameData.countdownValue <= 0) {
+                    clearInterval(gameData.autoProgressTimer);
+                    nextPlayer();
+                }
+            }, 1000);
+            
+            // Beralih ke layar reveal peran
+            switchScreen('roleReveal');
+        }
+
+        // Fungsi untuk melanjutkan ke pemain berikutnya
+        function nextPlayer() {
+            // Hentikan timer otomatis
+            if (gameData.autoProgressTimer) {
+                clearInterval(gameData.autoProgressTimer);
+                gameData.autoProgressTimer = null;
+            }
+            
+            gameData.currentPlayerIndex++;
+            
+            if (gameData.currentPlayerIndex < gameData.players.length) {
+                // Masih ada pemain yang belum melihat peran
+                document.getElementById('narator-text').textContent = 
+                    `Berikan HP kepada ${gameData.players[gameData.currentPlayerIndex].name} untuk melihat peran mereka.`;
+                
+                // Kembali ke layar role assignment untuk instruksi
+                switchScreen('roleAssignment');
+            } else {
+                // Semua pemain sudah melihat peran, langsung ke malam hari
+                startNight();
+            }
+        }
+
+        // Fungsi untuk memulai malam hari
+        function startNight() {
+            gameData.nightPhase = 'werewolf';
+            gameData.killedTonight = null;
+            gameData.healedTonight = null;
+            gameData.seerTarget = null;
+            
+            // Update narator
+            document.getElementById('night-narator-text').textContent = 
+                'Malam tiba. Semua warga desa tertidur. Werewolf, bangun dan pilih target untuk dibunuh malam ini.';
+            
+            // Tampilkan aksi werewolf
+            showWerewolfAction();
+            
+            // Beralih ke layar malam hari
+            switchScreen('night');
+        }
+
+        // Fungsi untuk menampilkan aksi werewolf
+        function showWerewolfAction() {
+            const nightActionArea = document.getElementById('night-action-area');
+            const werewolves = gameData.players.filter(p => p.role === 'Werewolf' && p.alive);
+            
+            if (werewolves.length === 0) {
+                nightActionArea.innerHTML = '<p>Tidak ada werewolf yang hidup. Lanjutkan ke fase siang.</p>';
+                return;
+            }
+            
+            nightActionArea.innerHTML = `
+                <h3>Werewolf, pilih target untuk dibunuh:</h3>
+                <div class="selection-list" id="werewolf-targets"></div>
+            `;
+            
+            const targetsContainer = document.getElementById('werewolf-targets');
+            const alivePlayers = gameData.players.filter(p => p.alive);
+            
+            alivePlayers.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'selection-item';
+                div.textContent = player.name;
+                div.onclick = () => selectNightTarget(player.id, 'werewolf');
+                targetsContainer.appendChild(div);
+            });
+        }
+
+        // Fungsi untuk memilih target malam hari
+        function selectNightTarget(playerId, phase) {
+            const player = gameData.players.find(p => p.id === playerId);
+            
+            if (phase === 'werewolf') {
+                gameData.killedTonight = playerId;
+                document.getElementById('night-narator-text').textContent = 
+                    `Werewolf memilih ${player.name} sebagai target. Lanjut ke fase Seer.`;
+                gameData.nightPhase = 'seer';
+                showSeerAction();
+            } else if (phase === 'seer') {
+                gameData.seerTarget = playerId;
+                document.getElementById('night-narator-text').textContent = 
+                    `Seer melihat peran ${player.name}. Lanjut ke fase Doctor.`;
+                gameData.nightPhase = 'doctor';
+                showDoctorAction();
+            } else if (phase === 'doctor') {
+                gameData.healedTonight = playerId;
+                document.getElementById('night-narator-text').textContent = 
+                    `Doctor memilih untuk menyelamatkan ${player.name}. Malam segera berakhir.`;
+                gameData.nightPhase = 'end';
+            }
+        }
+
+        // Fungsi untuk menampilkan aksi Seer
+        function showSeerAction() {
+            const nightActionArea = document.getElementById('night-action-area');
+            const seer = gameData.players.find(p => p.role === 'Seer' && p.alive);
+            
+            if (!seer) {
+                document.getElementById('night-narator-text').textContent = 
+                    'Tidak ada Seer yang hidup. Lanjut ke fase Doctor.';
+                gameData.nightPhase = 'doctor';
+                showDoctorAction();
+                return;
+            }
+            
+            nightActionArea.innerHTML = `
+                <h3>Seer (${seer.name}), pilih satu pemain untuk melihat perannya:</h3>
+                <div class="selection-list" id="seer-targets"></div>
+            `;
+            
+            const targetsContainer = document.getElementById('seer-targets');
+            const alivePlayers = gameData.players.filter(p => p.alive && p.id !== seer.id);
+            
+            alivePlayers.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'selection-item';
+                div.textContent = player.name;
+                div.onclick = () => selectNightTarget(player.id, 'seer');
+                targetsContainer.appendChild(div);
+            });
+        }
+
+        // Fungsi untuk menampilkan aksi Doctor
+        function showDoctorAction() {
+            const nightActionArea = document.getElementById('night-action-area');
+            const doctor = gameData.players.find(p => p.role === 'Doctor' && p.alive);
+            
+            if (!doctor) {
+                document.getElementById('night-narator-text').textContent = 
+                    'Tidak ada Doctor yang hidup. Malam segera berakhir.';
+                gameData.nightPhase = 'end';
+                return;
+            }
+            
+            nightActionArea.innerHTML = `
+                <h3>Doctor (${doctor.name}), pilih satu pemain untuk diselamatkan:</h3>
+                <div class="selection-list" id="doctor-targets"></div>
+            `;
+            
+            const targetsContainer = document.getElementById('doctor-targets');
+            const alivePlayers = gameData.players.filter(p => p.alive);
+            
+            alivePlayers.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'selection-item';
+                div.textContent = player.name;
+                div.onclick = () => selectNightTarget(player.id, 'doctor');
+                targetsContainer.appendChild(div);
+            });
+        }
+
+        // Fungsi untuk mengakhiri malam
+        function endNight() {
+            // Tentukan siapa yang mati
+            let killedPlayerId = gameData.killedTonight;
+            
+            // Jika doctor menyelamatkan korban werewolf
+            if (gameData.healedTonight === gameData.killedTonight) {
+                killedPlayerId = null;
+            }
+            
+            // Update status pemain
+            if (killedPlayerId) {
+                const killedPlayer = gameData.players.find(p => p.id === killedPlayerId);
+                killedPlayer.alive = false;
+                gameData.killedTonight = killedPlayer;
+            }
+            
+            // Beralih ke layar siang hari
+            switchScreen('day');
+            
+            // Update informasi korban
+            if (killedPlayerId) {
+                const killedPlayer = gameData.players.find(p => p.id === killedPlayerId);
+                document.getElementById('victim-name').textContent = `${killedPlayer.name} (${killedPlayer.role})`;
+                document.getElementById('day-narator-text').textContent = 
+                    `Pagi tiba. Warga desa bangun dan menemukan ${killedPlayer.name} tewas terbunuh malam ini! ${killedPlayer.name} adalah seorang ${killedPlayer.role}. Diskusikan dan cari tahu siapa werewolf di antara kalian.`;
+            } else {
+                document.getElementById('victim-name').textContent = "Tidak ada korban malam ini!";
+                document.getElementById('day-narator-text').textContent = 
+                    'Pagi tiba. Warga desa bangun dan bersyukur karena tidak ada korban malam ini! Diskusikan dan cari tahu siapa werewolf di antara kalian.';
+            }
+            
+            // Reset untuk voting
+            gameData.currentPlayerIndex = 0;
+            gameData.voteResults = {};
+        }
+
+        // Fungsi untuk memulai voting
+        function startVoting() {
+            // Reset hasil voting
+            gameData.voteResults = {};
+            gameData.players.forEach(player => {
+                player.votedBy = [];
+            });
+            
+            // Tentukan pemain yang masih hidup
+            const alivePlayers = gameData.players.filter(p => p.alive);
+            
+            if (alivePlayers.length <= 0) {
+                alert('Tidak ada pemain yang hidup!');
+                return;
+            }
+            
+            // Set pemain pertama yang voting
+            gameData.currentPlayerIndex = 0;
+            
+            // Update tampilan voting
+            updateVotingScreen();
+            
+            // Beralih ke layar voting
+            switchScreen('voting');
+        }
+
+        // Fungsi untuk memperbarui layar voting
+        function updateVotingScreen() {
+            const currentVoter = gameData.players.filter(p => p.alive)[gameData.currentPlayerIndex];
+            
+            if (!currentVoter) {
+                showVoteResults();
+                return;
+            }
+            
+            // Update narator
+            document.getElementById('current-voter').textContent = `Pemain yang Sedang Voting: ${currentVoter.name}`;
+            
+            // Buat opsi voting
+            const votingOptions = document.getElementById('voting-options');
+            votingOptions.innerHTML = '';
+            
+            const alivePlayers = gameData.players.filter(p => p.alive && p.id !== currentVoter.id);
+            
+            alivePlayers.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'selection-item';
+                div.textContent = player.name;
+                div.onclick = () => castVote(player.id);
+                votingOptions.appendChild(div);
+            });
+            
+            // Tambahkan opsi abstain
+            const abstainDiv = document.createElement('div');
+            abstainDiv.className = 'selection-item';
+            abstainDiv.textContent = 'Abstain (Tidak Memilih)';
+            abstainDiv.onclick = () => castVote(null);
+            votingOptions.appendChild(abstainDiv);
+        }
+
+        // Fungsi untuk memberikan suara
+        function castVote(targetId) {
+            const currentVoter = gameData.players.filter(p => p.alive)[gameData.currentPlayerIndex];
+            
+            // Catat suara
+            if (targetId) {
+                const targetPlayer = gameData.players.find(p => p.id === targetId);
+                targetPlayer.votedBy.push(currentVoter.name);
+                
+                // Hitung hasil voting
+                if (!gameData.voteResults[targetId]) {
+                    gameData.voteResults[targetId] = 0;
+                }
+                gameData.voteResults[targetId]++;
+            }
+            
+            // Lanjut ke pemain berikutnya
+            gameData.currentPlayerIndex++;
+            
+            // Periksa apakah semua pemain sudah voting
+            const alivePlayers = gameData.players.filter(p => p.alive);
+            if (gameData.currentPlayerIndex >= alivePlayers.length) {
+                // Semua sudah voting
+                showVoteResults();
+            } else {
+                // Lanjut ke pemain berikutnya
+                updateVotingScreen();
+            }
+        }
+
+        // Fungsi untuk menampilkan hasil voting
+        function showVoteResults() {
+            // Hitung hasil voting
+            let maxVotes = 0;
+            let executedPlayerId = null;
+            
+            for (const [playerId, votes] of Object.entries(gameData.voteResults)) {
+                if (votes > maxVotes) {
+                    maxVotes = votes;
+                    executedPlayerId = parseInt(playerId);
+                } else if (votes === maxVotes && votes > 0) {
+                    // Seri, tidak ada yang dieksekusi
+                    executedPlayerId = null;
+                }
+            }
+            
+            // Update tampilan hasil voting
+            const voteResultsContainer = document.getElementById('vote-results-container');
+            voteResultsContainer.innerHTML = '<h3>Hasil Voting:</h3>';
+            
+            const alivePlayers = gameData.players.filter(p => p.alive);
+            
+            alivePlayers.forEach(player => {
+                const votes = gameData.voteResults[player.id] || 0;
+                const voteResultDiv = document.createElement('div');
+                voteResultDiv.className = 'vote-result';
+                voteResultDiv.innerHTML = `
+                    <span>${player.name}</span>
+                    <span>${votes} suara</span>
+                `;
+                voteResultsContainer.appendChild(voteResultDiv);
+            });
+            
+            // Tampilkan pemain yang dieksekusi jika ada
+            if (executedPlayerId && maxVotes > 0) {
+                const executedPlayer = gameData.players.find(p => p.id === executedPlayerId);
+                executedPlayer.alive = false;
+                
+                document.getElementById('executed-player-name').textContent = executedPlayer.name;
+                document.getElementById('executed-player-role').textContent = `Peran: ${executedPlayer.role}`;
+                document.getElementById('executed-player-info').style.display = 'block';
+                
+                document.getElementById('vote-result-narator-text').textContent = 
+                    `Hasil voting telah dikumpulkan. ${executedPlayer.name} dieksekusi oleh warga desa!`;
+            } else {
+                document.getElementById('vote-result-narator-text').textContent = 
+                    'Hasil voting telah dikumpulkan. Tidak ada yang dieksekusi karena hasil voting seri atau tidak ada suara.';
+            }
+            
+            // Beralih ke layar hasil voting
+            switchScreen('voteResult');
+        }
+
+        // Fungsi untuk melanjutkan permainan setelah voting
+        function continueAfterVote() {
+            // Periksa apakah permainan sudah berakhir
+            const werewolves = gameData.players.filter(p => p.role === 'Werewolf' && p.alive);
+            const villagers = gameData.players.filter(p => p.role !== 'Werewolf' && p.alive);
+            
+            if (werewolves.length === 0) {
+                // Warga desa menang
+                document.getElementById('vote-result-narator-text').textContent = 
+                    'SEMUA WEREWOLF TELAH DIBASMI! Warga desa menang!';
+                return;
+            }
+            
+            if (werewolves.length >= villagers.length) {
+                // Werewolf menang
+                document.getElementById('vote-result-narator-text').textContent = 
+                    'WEREWOLF MENDOMINASI DESA! Werewolf menang!';
+                return;
+            }
+            
+            // Lanjut ke malam berikutnya
+            startNight();
+        }
+
+        // Fungsi untuk memulai ulang permainan
+        function restartGame() {
+            // Reset data permainan
+            gameData.players = [];
+            gameData.currentPlayerIndex = 0;
+            gameData.currentPhase = 'roleAssignment';
+            gameData.nightPhase = 'werewolf';
+            gameData.voteResults = {};
+            gameData.gameLog = [];
+            gameData.killedTonight = null;
+            gameData.healedTonight = null;
+            gameData.seerTarget = null;
+            
+            // Reset tampilan
+            document.getElementById('players-list').innerHTML = '';
+            document.getElementById('player-name').value = '';
+            
+            // Kembali ke layar awal
+            switchScreen('playerSetup');
+        }
+
+        // Event Listeners
+        document.getElementById('add-player-btn').addEventListener('click', addPlayer);
+        document.getElementById('player-name').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addPlayer();
+        });
+        
+        document.getElementById('start-game-btn').addEventListener('click', startGame);
+        document.getElementById('next-player-btn').addEventListener('click', revealCurrentPlayerRole);
+        document.getElementById('hide-role-btn').addEventListener('click', nextPlayer);
+        document.getElementById('next-night-phase-btn').addEventListener('click', function() {
+            if (gameData.nightPhase === 'werewolf') {
+                gameData.nightPhase = 'seer';
+                showSeerAction();
+            } else if (gameData.nightPhase === 'seer') {
+                gameData.nightPhase = 'doctor';
+                showDoctorAction();
+            } else if (gameData.nightPhase === 'doctor') {
+                gameData.nightPhase = 'end';
+                document.getElementById('night-narator-text').textContent = 
+                    'Semua aksi malam hari telah selesai. Klik "Akhiri Malam" untuk melanjutkan.';
+                document.getElementById('night-action-area').innerHTML = '';
+            }
+        });
+        
+        document.getElementById('end-night-btn').addEventListener('click', endNight);
+        document.getElementById('start-discussion-btn').addEventListener('click', function() {
+            document.getElementById('day-narator-text').textContent = 
+                'Diskusi sedang berlangsung. Berikan waktu untuk diskusi, lalu klik "Mulai Voting" untuk melanjutkan.';
+        });
+        
+        document.getElementById('start-voting-btn').addEventListener('click', startVoting);
+        document.getElementById('show-vote-result-btn').addEventListener('click', showVoteResults);
+        document.getElementById('continue-after-vote-btn').addEventListener('click', continueAfterVote);
+        document.getElementById('restart-game-btn').addEventListener('click', restartGame);
+
+        // Tambahkan event listener untuk swipe up
+        let touchStartY = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.changedTouches[0].screenY;
+        }, false);
+        
+        document.addEventListener('touchend', function(e) {
+            const touchEndY = e.changedTouches[0].screenY;
+            const diff = touchStartY - touchEndY;
+            
+            // Jika swipe up cukup signifikan
+            if (diff > 50) {
+                const activeScreen = Object.keys(screens).find(key => screens[key].classList.contains('active'));
+                
+                if (activeScreen === 'roleReveal') {
+                    nextPlayer();
+                } else if (activeScreen === 'roleAssignment') {
+                    revealCurrentPlayerRole();
+                }
+            }
+        }, false);
+
+        // Inisialisasi
+        updatePlayerList();
+        
+        // Tambahkan beberapa pemain contoh untuk memudahkan testing
+        gameData.players = [
+            { id: 1, name: 'Andi', role: '', alive: true, votedBy: [] },
+            { id: 2, name: 'Budi', role: '', alive: true, votedBy: [] },
+            { id: 3, name: 'Citra', role: '', alive: true, votedBy: [] },
+            { id: 4, name: 'Dewi', role: '', alive: true, votedBy: [] },
+            { id: 5, name: 'Eka', role: '', alive: true, votedBy: [] }
+        ];
+        updatePlayerList();
+    </script>
+</body>
+</html>
